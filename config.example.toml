@@ -1,0 +1,154 @@
+mcbus_url = 'https://example.com:1234'
+idle_timeout = 360
+watchdog_timeout = 360
+this_device = 'GAMELAPTOP-LINUX'
+
+[devices.GAMELAPTOP-LINUX]
+waker_name = 'GAMELAPTOP-Linux-Waker-e63d90ce-a373-4642-8b12-91b6e3d9fb97'
+server_name = 'GAMELAPTOP-Linux-Server-eba58fb8-c779-434a-8eef-7ae82f2ce2ad'
+server_key = 'cZPhzx8Ric;K@zPO}Rn9<xi(<DL*D^^@D{I>wBL%*dv&`rL7dbh&Lg;G2#^Ko5`B@C>m=J3DTt9'
+client_key = 'P#X;Pw6x|7_;Y7Eg=nBcqvK}YBCAROKRLnbPzJR$&JV8B))prgD_C%nA~u+ID%=J33D6qMzYS6%'
+
+[devices.GAMELAPTOP-LINUX.commands]
+uptime = 'uptime'
+start_sessen = 'systemctl start Sessen'
+stop_sessen = 'systemctl start Sessen'
+sessen_status = 'systemctl status Sessen'
+start_gamepadify = 'systemctl start Gamepadify'
+stop_gamepadify = 'systemctl stop Gamepadify'
+gamepadify_status = 'systemctl status Gamepadify'
+start_flatpak_steam = '''
+  /srv/mclite/helper run_as_user --user Liz -- \
+  flatpak run --branch=stable --arch=x86_64 \
+  --command=/app/bin/steam com.valvesoftware.Steam \
+'''
+stop_flatpak_steam = 'pkill -TERM -eof -u Liz srt-logger-opened'
+start_bottles_steam = '''
+  /srv/mclite/helper run_as_user --user Liz -- \
+  env DXVK_LOG_LEVEL=error flatpak run \
+  --command=bottles-cli com.usebottles.bottles \
+  run -b Main --program Steam \
+'''
+start_rcr_in_bottles_steam = '''
+  /srv/mclite/helper run_as_user --user Liz -- \
+  env DXVK_LOG_LEVEL=error flatpak run \
+  --command=bottles-cli com.usebottles.bottles \
+  shell -b Main -i 'start /w steam://run/204630' \
+'''
+stop_bottles_steam = "pkill -KILL -eof -u Liz 'bwrap.+?bottles.+?Main'"
+# boot_windows = '''
+#   env XDG_CURRENT_DESKTOP=KDE SUDO_USER=Liz \
+#   /srv/mclite/helper run_as_user --sudo_user root -- \
+#   /root/.local/bin/boot_windows \
+# '''
+# boot_windows_without_sync = '''
+#   env XDG_CURRENT_DESKTOP=KDE SUDO_USER=Liz \
+#   /srv/mclite/helper run_as_user --sudo_user root -- \
+#   /root/.local/bin/boot_windows --nosync \
+# '''
+boot_windows = '''
+  /srv/mclite/helper run_as_user --user Liz -- \
+  sudo /usr/bin/python3 -I /root/.local/bin/boot_windows \
+'''
+boot_windows_without_sync = '''
+  /srv/mclite/helper run_as_user --user Liz -- \
+  sudo /usr/bin/python3 -I /root/.local/bin/boot_windows --nosync \
+'''
+prbsync_query = 'sudo -u Liz prbsync query'
+prbsync_auto_sync = 'sudo -u Liz nohup prbsync auto_sync'
+do_all_the_things = 'sudo -u Liz python /home/Liz/.local/bin/do_all_the_things --remote'
+do_all_the_things_next = 'sudo -u Liz python /home/Liz/.local/bin/do_all_the_things --next'
+podman_ps = 'sudo -u Liz podman ps -a --size'
+boot_virtuator_minipc = 'sudo -u Liz virtuator boot mclite_minipc'
+stop_virtuator_minipc = 'sudo -u Liz virtuator stop mclite_minipc'
+ptaskrunner_start = 'ptaskrunner MCLite'
+ptaskrunner_status = 'systemctl status ptaskrunner-*-*'
+ptaskrunner_reset = 'ptaskrunner --reset'
+steamrollr_list = 'sudo -u Liz steamrollr list'
+lincfg_offline = '/root/.local/bin/lincfg -o'
+kde_reboot = '/srv/mclite/helper kde_logout --action logoutAndReboot'
+start_sddm = 'systemctl start sddm'
+stop_sddm = 'systemctl stop sddm'
+sddm_status = 'systemctl status sddm'
+force_reboot = 'reboot'
+force_reboot_via_systemctl = 'systemctl --force --force reboot'
+force_reboot_via_sigint = 'kill -INT 1'
+free = 'free -h'
+df = 'df -h'
+ps = '/srv/mclite/helper ps --match prbsync,rclone,mclite,podman,virtuator,steam,.local/bin'
+loginctl_list_sessions = 'loginctl list-sessions'
+login_and_lock = '/srv/mclite/helper login_and_lock Liz plasma /etc/sddm.conf.d/kde_settings.conf'
+logout = '/srv/mclite/helper kde_logout'
+mclite_status = 'systemctl status MissionControlLite'
+restart_mclite = 'systemctl restart --signal=SIGINT MissionControlLite'
+
+[devices.GAMELAPTOP-LINUX.commands.create_archlinux_container]
+cmd = '/srv/mclite/helper create_container {name} docker.io/library/archlinux /bin/bash --user Liz'
+args = ['name']
+
+[devices.GAMELAPTOP-LINUX.commands.create_alpine_container]
+cmd = '/srv/mclite/helper create_container {name} docker.io/library/alpine /bin/sh --user Liz'
+args = ['name']
+
+[devices.GAMELAPTOP-LINUX.commands.setup_container]
+cmd = '''
+  /srv/mclite/helper run_script_in_container {name} \
+  /srv/mclite/setup_container.sh --user Liz'
+'''
+args = ['name']
+
+[devices.GAMELAPTOP-LINUX.commands.delete_container]
+cmd = '/srv/mclite/helper delete_container {name} --user Liz'
+args = ['name']
+
+[devices.GAMELAPTOP-LINUX.commands.start_container]
+cmd = '/srv/mclite/helper start_container {name} --user Liz'
+args = ['name']
+
+[devices.GAMELAPTOP-LINUX.commands.stop_container]
+cmd = '/srv/mclite/helper stop_container {name} --user Liz'
+args = ['name']
+
+[devices.GAMELAPTOP-LINUX.commands.exec_in_container]
+cmd = '/srv/mclite/helper exec_in_container {name} --user Liz'
+args = ['name']
+accepts_stdin = true
+
+[devices.GAMELAPTOP-LINUX.commands.steamrollr_copy]
+cmd = 'sudo -u Liz steamrollr copy {slug} {destination}'
+args = ['slug', 'destination']
+
+[devices.GAMELAPTOP-LINUX.commands.steamrollr_move]
+cmd = 'sudo -u Liz steamrollr move {slug} {destination}'
+args = ['slug', 'destination']
+
+[devices.GAMELAPTOP-WINDOWS]
+waker_name = 'GAMELAPTOP-Windows-Waker-10dc5b03-08e0-4ebc-95b3-c70c3fb622ef'
+server_name = 'GAMELAPTOP-Windows-Server-d4337832-c9a0-4209-b7ee-6738ed14178d'
+server_key = '&ORSC^+%OA197*u9BjS8e0QDYCjHBkV!e&X;riqz>@3O!&&+mebQm{#Lg)#6+J&s$d;N7vqTw4V'
+client_key = '58$KAe(9SdD=7q-iQ=_nr|1EdxL=M|O;gVa+-m};+80+fw4O8{j~A_h@8@TK&d}K{-^fLBwFAt;'
+
+[devices.GAMELAPTOP-WINDOWS.commands]
+boot_time = 'powershell -c "(gcim Win32_OperatingSystem).LastBootUpTime"'
+tasklist = 'tasklist'
+ps = 'py /ProgramData/mclite/helper.py ps --match mclite,steam'
+dir_root = 'cmd /c "cd / && dir ."'
+free_physical_memory = 'powershell -c "(gcim Win32_OperatingSystem).FreePhysicalMemory/1048576"'
+reboot = 'shutdown /r'
+force_reboot = 'shutdown /r /f /t 5'
+query_services = 'sc query'
+update_windows = 'usoclient startinteractivescan'
+update_winget_packages = 'winget upgrade --all --accept-package-agreements --accept-source-agreements'
+start_rustdesk = 'sc start RustDesk'
+stop_rustdesk = 'sc stop RustDesk'
+restart_rustdesk = 'powershell -c "Restart-Service RustDesk -Force"'
+start_ds4windows = 'schtasks /run /tn ds4windows'
+stop_ds4windows = 'schtasks /end /tn ds4windows'
+start_steam = 'schtasks /run /tn Steam'
+stop_steam_via_task = 'schtasks /end /tn Steam'
+stop_steam_via_taskkill = 'taskkill /im steam*'
+stop_steam_via_taskkill_force = 'taskkill /f /im steam*'
+# TODO make sure Restart-Service can be called from the service being restarted
+restart_mclite = 'powershell -c "Restart-Service Schedule"'
+force_restart_mclite = 'powershell -c "Restart-Service Schedule -Force"'
+

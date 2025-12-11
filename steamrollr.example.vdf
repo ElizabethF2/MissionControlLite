@@ -1,0 +1,37 @@
+"config"
+{
+  "libraries"
+  {
+    "fp1"
+    {
+      "path" "~/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps"
+    }
+    
+    "b1"
+    {
+      "path" "~/.var/app/com.usebottles.bottles/data/bottles/bottles/Main/drive_c/Program Files (x86)/Steam/steamapps"
+    }
+
+    "w1"
+    {
+      "root" "/srv/Windows"
+      "path" "Program Files (x86)/Steam/steamapps"
+      "mount_cmd" "mount /dev/disk/by-label/Windows /srv/Windows"
+      "no_snapshot" "True"
+    }
+
+    "w2"
+    {
+      "root" "/srv/Secondary"
+      "path" "SteamLibrary"
+      "mount_cmd" "mount /dev/disk/by-label/Secondary /srv/Secondary"
+      "no_snapshot" "True"
+    }
+    
+  }
+
+  "slugs"
+  {
+    "260160" "lasttinker"
+  }
+}
