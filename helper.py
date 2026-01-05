@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-import sys, os, subprocess, shutil, shlex, base64, stat
+HELP_TEXT = '''
+TODO
+'''.lstrip()
+
+import sys, os, subprocess, shutil
 
 DEFAULT_ID_LENGTH = 32
 DEFAULT_KEY_LENGTH = 64
@@ -22,6 +26,7 @@ def ps(named_args):
   for marg in margs:
     matches.update(map(str.strip, marg.split(',')))
   results = {}
+  import shlex
   try:
     for pid in os.listdir('/proc'):
       if not pid.isdigit():
@@ -54,9 +59,9 @@ def ps(named_args):
 def try_find_dbus_sessions(named_args):
   results = []
   sockets_by_uid = {}
-  addr = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
-  if addr:
+  if addr := os.environ.get('DBUS_SESSION_BUS_ADDRESS'):
     sockets_by_uid[os.getuid()] = addr
+  import stat
   for search_path in DBUS_SEARCH_PATHS:
     for d in os.listdir(search_path):
       if not d.isdigit():
@@ -124,20 +129,16 @@ def get_container_name(name, named_args):
 
 def get_container_engine(named_args):
   for engine in ([named_args.get('engine')] + DEFAULT_CONTAINER_ENGINES):
-    if engine:
-      engine = shutil.which(engine)
-    if engine:
+    if engine and (engine := shutil.which(engine)):
       return engine
-  raise ValueError(f'No container engine found: install podman or docker, ' +
+  raise ValueError(f'No container engine found: install Podman or Docker, ' +
                    'specify an engine with --engine and/or check args')
 
 def run_container_cmd(cmd, named_args, stdin = None):
-  engine = get_container_engine(named_args)
-  user = named_args.get('user')
-  if user:
-    return subprocess.check_call(['sudo', '-u', user, engine] + cmd,
-                                 stdin = stdin)
-  return subprocess.check_call([engine] + cmd, stdin = stdin)
+  cmd_args = [get_container_engine(named_args), *cmd]
+  if user := named_args.get('user'):
+    cmd_args = ['sudo', '-u', user, *cmd_args]
+  return subprocess.check_call(cmd_args, stdin = stdin)
 
 def create_container(name, image, cmd, named_args):
   name = get_container_name(name, named_args)
@@ -252,6 +253,16 @@ def get_sessions(user = None):
     return js
   return list(filter(lambda i: i.get('user') == user, js))
 
+def show_sessions(user = None):
+  for idx, session in enumerate(get_sessions(user = user)):
+    if idx > 0:
+      print('')
+    for k, v in session.items():
+      print('# ' + repr(k) + ': ' + repr(v))
+    print(subprocess.check_output(
+          ('loginctl', 'show-session', str(session.get('session')))
+    ).decode().strip())
+
 def login_and_lock(user, session, conf):
   if len(get_sessions(user = user)) > 0:
     subprocess.check_call(('loginctl', 'lock-sessions'))
@@ -263,7 +274,7 @@ def login_and_lock(user, session, conf):
   )
   with open(conf, 'r') as f:
     txt = f.read()
-  import re, tempfile, time
+  import re, tempfile, time, stat
   for k,v in entries:
     txt = re.sub('\n'+k+'=.*', '\n'+k+'='+v, txt)
   tf = tempfile.NamedTemporaryFile(mode = 'w', prefix = 'sddm_conf_')
@@ -286,6 +297,7 @@ def generate_key(key_length = DEFAULT_KEY_LENGTH, b85 = True):
     key += getrandom(1, getattr(os, 'GRND_RANDOM', 0)) \
            if (getrandom := getattr(os, 'getrandom', None)) else \
            os.urandom(1)
+  import base64
   return base64.b85encode(key).decode() if b85 else key
 
 def generate_id(id_length = DEFAULT_ID_LENGTH):
@@ -360,6 +372,8 @@ def main():
   elif command == 'run_as_user':
     cmd = positional_args[1:]
     return run_as_user(cmd, named_args)
+  elif command == 'show_sessions':
+    return show_sessions(user = named_args.get('user'))
   elif command == 'login_and_lock':
     user = positional_args[1]
     session = positional_args[2]
@@ -376,8 +390,10 @@ def main():
     il = int(named_args.get('id_length', DEFAULT_ID_LENGTH))
     name = named_args.get('name')
     return print(generate_config(key_length = kl, id_length = il, name = name))
+  elif command == 'help':
+    return print(HELP_TEXT)
   else:
-    raise ValueError(f'Invalid command: {command}')
+    raise ValueError(f'Invalid command: {command}\nRun `help` for help')
 
 if __name__ == '__main__':
   main()

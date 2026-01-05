@@ -7,7 +7,8 @@ import missioncontrollitelib
 def main():
   server_cfg_path = missioncontrollitelib.get_config_path()
   user = os.environ['SUDO_USER']
-  py = 'import missioncontrollitelib as mc;' + \
+  py = 'import sys; sys.dont_write_bytecode = True;' + \
+       'import missioncontrollitelib as mc;' + \
        'mc.DEFAULT_CONFIG_ENV_VAR_NAME = "MCLITE_CLIENT_CONFIG";' + \
        'print(mc.get_config_path());'
   out = subprocess.check_output(('sudo', '-u', user, sys.executable, '-c', py))

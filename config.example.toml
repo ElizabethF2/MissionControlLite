@@ -17,24 +17,28 @@ sessen_status = 'systemctl status Sessen'
 start_gamepadify = 'systemctl start Gamepadify'
 stop_gamepadify = 'systemctl stop Gamepadify'
 gamepadify_status = 'systemctl status Gamepadify'
-start_flatpak_steam = '''
+start_firefox_flatpak = """
   /srv/mclite/helper run_as_user --user Liz -- \
-  flatpak run --branch=stable --arch=x86_64 \
-  --command=/app/bin/steam com.valvesoftware.Steam \
-'''
+  flatpak run --command=firefox org.mozilla.firefox \
+"""
+stop_firefox = 'pkill -INT -ef -u Liz firefox'
+start_flatpak_steam = """
+  /srv/mclite/helper run_as_user --user Liz -- \
+  flatpak run --command=/app/bin/steam com.valvesoftware.Steam \
+"""
 stop_flatpak_steam = 'pkill -TERM -eof -u Liz srt-logger-opened'
-start_bottles_steam = '''
+start_bottles_steam = """
   /srv/mclite/helper run_as_user --user Liz -- \
   env DXVK_LOG_LEVEL=error flatpak run \
   --command=bottles-cli com.usebottles.bottles \
   run -b Main --program Steam \
-'''
-start_rcr_in_bottles_steam = '''
+"""
+start_rcr_in_bottles_steam = """
   /srv/mclite/helper run_as_user --user Liz -- \
   env DXVK_LOG_LEVEL=error flatpak run \
   --command=bottles-cli com.usebottles.bottles \
   shell -b Main -i 'start /w steam://run/204630' \
-'''
+"""
 stop_bottles_steam = "pkill -KILL -eof -u Liz 'bwrap.+?bottles.+?Main'"
 # boot_windows = '''
 #   env XDG_CURRENT_DESKTOP=KDE SUDO_USER=Liz \
@@ -46,14 +50,20 @@ stop_bottles_steam = "pkill -KILL -eof -u Liz 'bwrap.+?bottles.+?Main'"
 #   /srv/mclite/helper run_as_user --sudo_user root -- \
 #   /root/.local/bin/boot_windows --nosync \
 # '''
-boot_windows = '''
+boot_windows = """
   /srv/mclite/helper run_as_user --user Liz -- \
   sudo /usr/bin/python3 -I /root/.local/bin/boot_windows \
-'''
-boot_windows_without_sync = '''
+"""
+boot_windows_without_sync = """
   /srv/mclite/helper run_as_user --user Liz -- \
   sudo /usr/bin/python3 -I /root/.local/bin/boot_windows --nosync \
-'''
+"""
+check_tpm_seal = """
+  sh -c 'export IGNORE_IF_ON_BATTERY=1 ; \
+         /root/.local/bin/auto_tpm_encrypt --ensure_no_os_are_unsealed ; \
+         printf "\\n\\n\\n" ; \
+         /root/.local/bin/auto_tpm_encrypt --ensure_booted_os_is_sealed' \
+"""
 prbsync_query = 'sudo -u Liz prbsync query'
 prbsync_auto_sync = 'sudo -u Liz nohup prbsync auto_sync'
 do_all_the_things = 'sudo -u Liz python /home/Liz/.local/bin/do_all_the_things --remote'
@@ -75,10 +85,16 @@ force_reboot_via_systemctl = 'systemctl --force --force reboot'
 force_reboot_via_sigint = 'kill -INT 1'
 free = 'free -h'
 df = 'df -h'
-ps = '/srv/mclite/helper ps --match prbsync,rclone,mclite,podman,virtuator,steam,.local/bin'
+ps = '/srv/mclite/helper ps --match prbsync,rclone,mclite,podman,virtuator,steam,firefox,.local/bin'
 loginctl_list_sessions = 'loginctl list-sessions'
+show_sessions = '/srv/mclite/helper show_sessions'
 login_and_lock = '/srv/mclite/helper login_and_lock Liz plasma /etc/sddm.conf.d/kde_settings.conf'
 logout = '/srv/mclite/helper kde_logout'
+upower_dump = 'upower --dump'
+check_power_profile = 'powerprofilesctl'
+set_power_profile_to_performance = 'powerprofilesctl set performance'
+set_power_profile_to_balanced = 'powerprofilesctl set balanced'
+set_power_profile_to_power_saver = 'powerprofilesctl set power-saver'
 mclite_status = 'systemctl status MissionControlLite'
 restart_mclite = 'systemctl restart --signal=SIGINT MissionControlLite'
 
@@ -91,10 +107,10 @@ cmd = '/srv/mclite/helper create_container {name} docker.io/library/alpine /bin/
 args = ['name']
 
 [devices.GAMELAPTOP-LINUX.commands.setup_container]
-cmd = '''
+cmd = """
   /srv/mclite/helper run_script_in_container {name} \
   /srv/mclite/setup_container.sh --user Liz'
-'''
+"""
 args = ['name']
 
 [devices.GAMELAPTOP-LINUX.commands.delete_container]

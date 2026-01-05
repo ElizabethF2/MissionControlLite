@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
-import sys, os, time, textwrap, uuid
+import sys, os, time, shutil
 sys.dont_write_bytecode = True
+
+try:
+  import readline
+except ModuleNotFoundError:
+  pass
 
 import missioncontrollitelib
 missioncontrollitelib.DEFAULT_CONFIG_ENV_VAR_NAME = 'MCLITE_CLIENT_CONFIG'
@@ -25,26 +30,6 @@ def get_inbox(name, device):
   )
   key = get_config()['devices'][device]['server_key']
   return [missioncontrollitelib.decrypt(i, key) for i in inbox]
-
-def ask(choices):
-  while True:
-    valid = set()
-    for idx, label in choices:
-      print(f'{idx}) {label}')
-      valid.add(str(idx))
-    print('')
-    inp = input('> ')
-    print('')
-    if inp in valid:
-      return inp
-    print('Invalid selection!')
-    print('')
-
-def wrap_and_indent(txt, width = 80, indent = '    '):
-  return textwrap.indent(textwrap.fill(txt,
-                                       replace_whitespace = False,
-                                       drop_whitespace = False,
-                                       width = 80), indent)
 
 def wake(state):
   missing = object()
@@ -77,6 +62,7 @@ def check_inbox(state):
     inbox = []
   print(f'Got {len(inbox)} message(s)')
   print('')
+  w = shutil.get_terminal_size()[0]
   for idx, message in enumerate(inbox):
     print(f'Message #{idx+1}')
     for section in message.get('sections', []):
@@ -84,7 +70,7 @@ def check_inbox(state):
       print('  ' + title)
       body = section.get('body')
       if body:
-        print(wrap_and_indent(body))
+        print(wrap(body, width = w, indent = (4*' ')))
     print('')
 
 def device_menu(state):
@@ -148,12 +134,7 @@ def device_menu(state):
     check_inbox(state)
 
 def main_menu():
-  try:
-    with open('/proc/self/comm', 'r+') as f:
-      f.write('MCLite-Client')
-  except (FileNotFoundError, PermissionError):
-    pass
-
+  try_set_comm('MCLite-Client')
   while True:
     print(' -= Main Menu =-')
     print('')
@@ -165,7 +146,7 @@ def main_menu():
     if i == 'q':
       return
     state = {
-      'name': f'mclite_client_{uuid.uuid4()}',
+      'name': f'mclite_client_{token()}',
       'device': dict(choices)[int(i)],
     }
     device_menu(state)

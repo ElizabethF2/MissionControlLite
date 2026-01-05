@@ -94,7 +94,7 @@ int wmain(int argc, wchar_t *argv[])
   printf("timeout = %lu\n", timeout);
   printf("port = %lu\n", port);
 #endif
-  
+
   HINTERNET session = WinHttpOpen(
     NULL,
     WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
@@ -106,7 +106,7 @@ int wmain(int argc, wchar_t *argv[])
 #if DEBUG
   printf("session = %p\n", session);
 #endif
-  
+
   BOOL res = WinHttpSetTimeouts(
     session,
     timeout,

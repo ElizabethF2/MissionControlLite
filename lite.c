@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
     return ERROR_TOO_FEW_ARGS;
   }
 
-  unsigned long delay = strtoul(argv[1], NULL, 10);
-  unsigned long timeout = strtoul(argv[2], NULL, 10);
+  unsigned long delay = strtoul(argv[1], NULL, 0);
+  unsigned long timeout = strtoul(argv[2], NULL, 0);
 
 #if DEBUG
     printf("delay = %lu\n", delay);
@@ -64,16 +64,18 @@ int main(int argc, char *argv[])
 #if DEBUG
     printf("Checking wake inbox\n");
 #endif
+
     CURL* curl = curl_easy_init();
+
+#if USE_SMALL_CURL_BUFFER
+    curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, 1024L);
+#endif
+
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
     curl_easy_setopt(curl, CURLOPT_CAINFO, argv[3]);
     curl_easy_setopt(curl, CURLOPT_URL, argv[4]);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
-
-#if USE_SMALL_CURL_BUFFER
-    curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, 1024L);
-#endif
 
     char_count = 0;
     CURLcode res = curl_easy_perform(curl);

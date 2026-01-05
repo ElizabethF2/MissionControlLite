@@ -19,9 +19,23 @@ DEFAULT_CONFIG_DIRS = (
   os.path.join('/etc', 'v_NAMESPACE'),
   os.path.join('/srv', 'v_NAMESPACE'),
   os.path.join('/opt', 'v_NAMESPACE'),
+  os.path.join(
+    os.environ.get(
+      'XDG_CONFIG_HOME',
+      os.path.join(os.path.expanduser('~'), '.config'),
+    ),
+    'v_NAMESPACE',
+  ),
   os.path.dirname(__file__),
   os.curdir,
 )
+
+LINE_BOUNDARIES = (
+  '\n', '\r\n', '\r', '\v', '\f', '\x1c', '\x1d', '\x1e', '\x85',
+  '\u2028', '\u2029',
+)
+
+ESC = chr(27)
 
 @functools.cache
 def get_config_and_config_path(**kwargs):
@@ -111,6 +125,12 @@ def random_bytes(size):
            if (getrandom := getattr(os, 'getrandom', None)) else \
            os.urandom(1)
   return buf
+
+def token(length = 50):
+  t = ''
+  while len(t) < length:
+    t += (c.decode() if (c := random_bytes(1)).isalnum() else '')
+  return t
 
 def aes_encrypt(payload, key):
   bsize = cryptography.hazmat.primitives.ciphers.algorithms.AES.block_size
@@ -205,3 +225,42 @@ def receive(mcbus_url, name, verify = True):
       continue
     inbox.append(pl)
   return inbox
+
+def try_set_comm(comm):
+  try:
+    with open('/proc/self/comm', 'r+') as f:
+      f.write(comm.strip())
+  except (FileNotFoundError, PermissionError):
+    pass
+
+def ask(choices, prompt = '> ', error = 'Invalid selection!', delim = ') '):
+  while True:
+    valid = set()
+    for idx, label in choices:
+      print(f'{idx}{delim}{label}')
+      valid.add(str(idx))
+    print('')
+    inp = input(prompt)
+    print('')
+    if inp in valid:
+      return inp
+    print(error)
+    print('')
+
+def wrap(txt,
+         width = 80,
+         indent = '  ',
+         boundary = '\n',
+         escape_substitute = '`'):
+  result = []
+  w = max(width - len(indent), 1)
+  t = txt.replace(ESC, escape_substitute)
+  while t:
+    i = filter(lambda i: i >= 0, (t.find(b, 0, w) for b in LINE_BOUNDARIES))
+    i = min(i, default = w)
+    result.append(indent + t[:i])
+    t = (t[i+2:] if t[i:i+2] in LINE_BOUNDARIES else
+        (t[i+1:] if t[i:i+1] in LINE_BOUNDARIES else t[i:]))
+  if any((txt.endswith(b) for b in LINE_BOUNDARIES)):
+    result.append(indent)
+  return boundary.join(result) if boundary else result
