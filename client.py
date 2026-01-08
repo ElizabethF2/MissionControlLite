@@ -66,10 +66,8 @@ def check_inbox(state):
   for idx, message in enumerate(inbox):
     print(f'Message #{idx+1}')
     for section in message.get('sections', []):
-      title = section['title'][:78]
-      print('  ' + title)
-      body = section.get('body')
-      if body:
+      print(wrap(section['title'], width = w, indent = (2*' ')))
+      if body := section.get('body'):
         print(wrap(body, width = w, indent = (4*' ')))
     print('')
 

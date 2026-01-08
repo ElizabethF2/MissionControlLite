@@ -83,8 +83,7 @@ def handle_messages(messages):
           v = message.get('args', {}).get(arg, '')
           cmd = cmd.replace('{' + arg + '}', shlex.quote(v))
       threading.Thread(target = run_cmd,
-                       args = (sender, cmd, stdin),
-                       daemon = True).start()
+                       args = (sender, cmd, stdin)).start()
     else:
       send(sender, [{'title': 'Error',
                      'body': 'Invalid Request: ' + pprint.pformat(message)}])
@@ -123,7 +122,8 @@ def daemon_main():
   idle_timeout = get_config().get('idle_timeout', DEFAULT_IDLE_TIMEOUT)
   last_request = time.time()
   try:
-    while (time.time() - last_request) <= idle_timeout:
+    while (time.time() - last_request) <= idle_timeout or \
+          len(threading.enumerate()) > 1:
       missioncontrollitelib.watchdog_tick()
       inbox = get_inbox()
       if len(inbox) > 0:

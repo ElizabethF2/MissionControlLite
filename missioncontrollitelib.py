@@ -16,16 +16,16 @@ DEFAULT_CONFIG_ENV_VAR_NAME = 'MISSIONCONTROLLITELIBCONFIG'
 DEFAULT_CERT_NAME = 'cert.pem'
 DEFAULT_NAMESPACES = ('mclite', 'missioncontrollite', 'mission-control-lite')
 DEFAULT_CONFIG_DIRS = (
-  os.path.join('/etc', 'v_NAMESPACE'),
-  os.path.join('/srv', 'v_NAMESPACE'),
-  os.path.join('/opt', 'v_NAMESPACE'),
-  os.path.join(
+  lambda i : os.path.join(
     os.environ.get(
       'XDG_CONFIG_HOME',
       os.path.join(os.path.expanduser('~'), '.config'),
     ),
-    'v_NAMESPACE',
+    i,
   ),
+  lambda i: os.path.join('/etc', i),
+  lambda i: os.path.join('/srv', i),
+  lambda i : os.path.join('/opt', i),
   os.path.dirname(__file__),
   os.curdir,
 )
@@ -40,42 +40,26 @@ ESC = chr(27)
 @functools.cache
 def get_config_and_config_path(**kwargs):
   import tomllib
-  var = kwargs.get('config_env_var_name', DEFAULT_CONFIG_ENV_VAR_NAME)
-  if var:
-    path = os.environ.get(var)
-    if path:
+  if var := kwargs.get('config_env_var_name', DEFAULT_CONFIG_ENV_VAR_NAME):
+    if path := os.environ.get(var):
       with open(path, 'rb') as f:
         return tomllib.load(f)
-  xdg_config_home = os.environ.get('XDG_CONFIG_HOME')
   namespace = kwargs.get('namespace')
   namespaces = (namespace,) if namespace else DEFAULT_NAMESPACES
   config_name = kwargs.get('config_name', DEFAULT_CONFIG_NAME)
-  for namespace in namespaces:
-    if not xdg_config_home:
-      xdg_config_home = os.path.join(os.path.expanduser('~'), '.config')
-    try:
-      with open(os.path.join(xdg_config_home, namespace, config_name), 'rb') as f:
-        return tomllib.load(f), f.name
-    except FileNotFoundError:
-      pass
   config_paths = kwargs.get('config_paths', DEFAULT_CONFIG_DIRS)
-  for config_path in config_paths:
-    for namespace in namespaces:
-      if config_paths is DEFAULT_CONFIG_DIRS:
-        config_dir = config_path.replace('v_NAMESPACE', namespace)
-        paths = [os.path.join(config_dir, config_name)]
-      else:
-        paths = [config_path, os.path.join(config_path, config_name)]
-      for path in paths:
-        try:
-          with open(path, 'rb') as f:
-            return tomllib.load(f), f.name
-        except IsADirectoryError:
-          continue
-        except FileNotFoundError:
-          break
-      if config_paths is not DEFAULT_CONFIG_DIRS:
-        break
+  for cpath in config_paths:
+    paths = [os.path.join(cpath(i), config_name) for i in namespaces] \
+            if callable(cpath) else \
+            [os.path.join(config_dir, config_name)]
+    for path in paths:
+      try:
+        with open(path, 'rb') as f:
+          return tomllib.load(f), path
+      except IsADirectoryError:
+        continue
+      except FileNotFoundError:
+        continue
   raise FileNotFoundError('Config file missing')
 
 def get_config(**kwargs):
@@ -85,8 +69,7 @@ def get_config_path(**kwargs):
   return get_config_and_config_path(**kwargs)[1]
 
 def get_cert_path(**kwargs):
-  cert = get_config(**kwargs).get('mcbus_cert')
-  if cert:
+  if cert := get_config(**kwargs).get('mcbus_cert'):
     return cert
   return os.path.join(os.path.dirname(get_config_path()), DEFAULT_CERT_NAME)
 
