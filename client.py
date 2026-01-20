@@ -19,8 +19,11 @@ def send(device, payload, waker = False):
   recipient = get_config()['devices'][device][r]
   if waker and recipient is None:
     return
-  missioncontrollitelib.send(bus, recipient, key, payload,
-                             verify = get_cert_path())
+  try:
+    missioncontrollitelib.send(bus, recipient, key, payload,
+                              verify = get_cert_path())
+  except Exception as exc:
+    print('Error: ' + repr(exc))
 
 def get_inbox(name, device):
   inbox = missioncontrollitelib.receive(
@@ -59,6 +62,9 @@ def check_inbox(state):
     inbox = get_inbox(state['name'], state['device'])
   except KeyboardInterrupt:
     print('Interrupted!')
+    inbox = []
+  except Exception as exc:
+    print('Error: ' + repr(exc))
     inbox = []
   print(f'Got {len(inbox)} message(s)')
   print('')
