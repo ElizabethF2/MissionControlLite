@@ -23,7 +23,7 @@ If you haven't already, install Python, python-cryptography, libcurl, clang and 
 Run the commands below to compile the Waker on the Server device:
 
 ```
-clang -Oz -g0 -flto=full -lcurl -DDEBUG=0 -DUSE_SMALL_CURL_BUFFER=1 lite.c -o missioncontrollited
+clang -Oz -g0 -flto=full -DDEBUG=0 -DUSE_SMALL_CURL_BUFFER=1 lite.c -lcurl -o missioncontrollited
 strip -s --remove-section=.comment missioncontrollited
 ```
 
