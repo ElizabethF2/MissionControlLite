@@ -31,15 +31,15 @@ start_bottles_steam = """
   /srv/mclite/helper run_as_user --user Liz -- \
   env DXVK_LOG_LEVEL=error flatpak run \
   --command=bottles-cli com.usebottles.bottles \
-  run -b Main --program Steam \
+  run -b Quaternary --program Steam \
 """
 start_rcr_in_bottles_steam = """
   /srv/mclite/helper run_as_user --user Liz -- \
   env DXVK_LOG_LEVEL=error flatpak run \
   --command=bottles-cli com.usebottles.bottles \
-  shell -b Main -i 'start /w steam://run/204630' \
+  shell -b Quaternary -i 'start /w steam://run/204630' \
 """
-stop_bottles_steam = "pkill -KILL -eof -u Liz 'bwrap.+?bottles.+?Main'"
+stop_bottles_steam = "pkill -KILL -eof -u Liz 'bwrap.+?bottles.+?Quaternary'"
 # boot_windows = '''
 #   env XDG_CURRENT_DESKTOP=KDE SUDO_USER=Liz \
 #   /srv/mclite/helper run_as_user --sudo_user root -- \
