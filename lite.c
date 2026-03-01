@@ -17,7 +17,7 @@ size_t write_callback(char* ptr, size_t size, size_t nmemb, void* unused)
   for (int i=0; i < nmemb; ++i)
   {
     char c = ptr[i];
-    if (c != ' ' && c != '\n' && c != '\t' && c != '\r' && c != '\0')
+    if (c > ' ')
     {
       ++char_count;
 #if DEBUG

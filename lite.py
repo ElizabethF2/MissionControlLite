@@ -14,7 +14,8 @@ def main():
                                       .replace(b' ', b'')
                                       .replace(b'\t', b'')
                                       .replace(b'\r', b'')
-                                      .replace(b'\n', b'')) > 2:
+                                      .replace(b'\n', b'')
+                                      .replace(b'\0', b'')) > 2:
         os.system(sys.argv[5])
     except:
       os.system(sys.argv[6])

@@ -256,7 +256,7 @@ int wmain(int argc, wchar_t *argv[])
       for (int i = 0; i < read; ++i)
       {
         char c = buf[i];
-        if (c != ' ' && c != '\n' && c != '\t' && c != '\r')
+        if (c > ' ')
         {
           ++char_count;
 #if DEBUG
