@@ -93,11 +93,10 @@ int main(int argc, char *argv[])
         printf("Starting server\n");
 #endif
 
-        FILE* proc = popen(argv[5], "w");
-        pclose(proc);
+        int rc = system(argv[5]);
 
 #if DEBUG
-        printf("Server finished\n");
+        printf("Server finished: %d\n", rc);
 #endif
       }
     }
@@ -107,11 +106,10 @@ int main(int argc, char *argv[])
       printf("Starting network repair tool\n");
 #endif
 
-      FILE* proc = popen(argv[6], "w");
-      pclose(proc);
+      int rc = system(argv[6]);
 
 #if DEBUG
-      printf("Network repair tool finished\n");
+      printf("Network repair tool finished: %d\n", rc);
 #endif
     }
 
