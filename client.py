@@ -83,6 +83,7 @@ def device_menu(state):
     print(' -= Device Menu =- ')
     print('')
     print(f'Current Device: {state['device']}')
+    print(f'Client ID: {state['name']}')
     print('')
     commands = get_config()['devices'][state['device']]['commands']
     choices = [(idx+1, i) for idx, i in enumerate(commands.keys())]
@@ -149,8 +150,10 @@ def main_menu():
     i = ask(choices + [('q', 'Quit')])
     if i == 'q':
       return
+    if (client_id := os.environ.get('MCLITE_CLIENT_ID')) is None:
+      client_id = f'mclite_client_{token()}'
     state = {
-      'name': f'mclite_client_{token()}',
+      'name': client_id,
       'device': dict(choices)[int(i)],
     }
     device_menu(state)
