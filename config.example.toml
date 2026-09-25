@@ -12,7 +12,7 @@ client_key = 'P#X;Pw6x|7_;Y7Eg=nBcqvK}YBCAROKRLnbPzJR$&JV8B))prgD_C%nA~u+ID%=J33
 [devices.GAMELAPTOP-LINUX.commands]
 uptime = 'uptime'
 start_sessen = 'systemctl start Sessen'
-stop_sessen = 'systemctl start Sessen'
+stop_sessen = 'systemctl stop Sessen'
 sessen_status = 'systemctl status Sessen'
 start_gamepadify = 'systemctl start Gamepadify'
 stop_gamepadify = 'systemctl stop Gamepadify'
